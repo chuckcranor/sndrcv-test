@@ -24,11 +24,11 @@
  *
  * example:
  *   # server is on 10.93.1.154, local IP is 10.93.1.146
- *   ./sndrcv-srvr 1 bmi+tcp://10.93.1.146:%d bmi+tcp://10.93.1.154:%d
- *   ./sndrcv-srvr 1 cci+tcp://10.93.1.146:%d cci+tcp://10.93.1.154:%d
+ *   ./sndrcv-client 1 bmi+tcp://10.93.1.146:%d bmi+tcp://10.93.1.154:%d
+ *   ./sndrcv-client 1 cci+tcp://10.93.1.146:%d cci+tcp://10.93.1.154:%d
  *   # 1 instance, remote server port=19900, local port=19901
  *
- *   ./sndrcv-srvr 1 cci+tcp://10.93.1.146:%d cci+tcp://10.93.1.154:%d
+ *   ./sndrcv-client 1 cci+tcp://10.93.1.146:%d cci+tcp://10.93.1.154:%d
  *   # 2 instances, remote server port=19900,19901 local port=19902,19903
  */
 
