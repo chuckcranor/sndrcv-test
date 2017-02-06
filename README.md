@@ -9,7 +9,7 @@ then exits.
 
 It can run multiple instances of the mercury server
 in the same process.   listening port numbers are assigned
-sequentially starting at BASEPORT (defined below as 19900).
+sequentially starting at BASEPORT (defined in the code as 19900).
 (the address spec uses a printf "%d" to fill the port number...)
 
 ```
@@ -32,7 +32,7 @@ The sndrcv-client.cc program contains a mercury RPC client that sends
 
 It can run multiple instances of the mercury client
 in the same process.   server port numbers are assigned
-sequentially starting at BASEPORT (defined below as 19900).
+sequentially starting at BASEPORT (defined in the code as 19900).
 (the address spec uses a printf "%d" to fill the port number...)
 we init the client side with ports after that...
 
@@ -49,11 +49,11 @@ should match.
   
    example:
      # server is on 10.93.1.154, local IP is 10.93.1.146
-     ./sndrcv-srvr 1 bmi+tcp://10.93.1.146:%d bmi+tcp://10.93.1.154:%d
-     ./sndrcv-srvr 1 cci+tcp://10.93.1.146:%d cci+tcp://10.93.1.154:%d
+     ./sndrcv-client 1 bmi+tcp://10.93.1.146:%d bmi+tcp://10.93.1.154:%d
+     ./sndrcv-client 1 cci+tcp://10.93.1.146:%d cci+tcp://10.93.1.154:%d
      # 1 instance, remote server port=19900, local port=19901
   
-     ./sndrcv-srvr 1 cci+tcp://10.93.1.146:%d cci+tcp://10.93.1.154:%d
+     ./sndrcv-client 1 cci+tcp://10.93.1.146:%d cci+tcp://10.93.1.154:%d
      # 2 instances, remote server port=19900,19901 local port=19902,19903
 ```
 
@@ -68,5 +68,7 @@ To compile with a build subdirectory, starting from the top-level source dir:
   make
 ```
 
-That will produce binaries in the current directory.
-
+That will produce binaries in the current directory.  "make install"
+will install the binaries in CMAKE_INSTALL_PREFIX/bin (defaults to
+/usr/local/bin) ... add a -DCMAKE_INSTALL_PREFIX=dir to change the
+install prefix from /usr/local to something else.
