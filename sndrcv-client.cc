@@ -45,6 +45,7 @@
 
 #define BASEPORT 19900   /* starting TCP port we contact (instance 0) */
 #define DEF_COUNT 5      /* default number of msgs to send and recv in a run */
+#define TIMEOUT 120      /* set alarm time (seconds) */
 
 /*
  * g: shared global data
@@ -127,6 +128,7 @@ int main(int argc, char **argv) {
         errx(0, "usage: %s n-instances local-addr-spec remote-addr-spec\n", 
                *argv);
 
+    alarm(TIMEOUT);             /* so we don't hang forever */
     g.ninst = atoi(argv[1]);
     g.localspec = argv[2];
     g.remotespec = argv[3];

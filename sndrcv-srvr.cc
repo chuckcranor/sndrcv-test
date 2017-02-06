@@ -35,6 +35,7 @@
 
 #define BASEPORT 19900   /* starting TCP port we listen on (instance 0) */
 #define DEF_COUNT 5      /* default number of msgs to send and recv in a run */
+#define TIMEOUT 120      /* set alarm time (seconds) */
 
 /*
  * g: shared global data
@@ -89,6 +90,7 @@ int main(int argc, char **argv) {
     if (argc != 3) 
         errx(0, "usage: %s n-instances local-addr-spec", *argv);
 
+    alarm(TIMEOUT);   /* so we don't hang forever */
     n = atoi(argv[1]);
     g.serverspec = argv[2];
     if ((c = getenv("COUNT")) != NULL && (rv = atoi(c)) > 0) {
