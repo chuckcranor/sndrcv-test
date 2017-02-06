@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 
-project (sndrcv-test CXX)
+project (sndrcv-test C CXX)
 
 set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
