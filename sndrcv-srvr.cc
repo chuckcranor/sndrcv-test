@@ -245,4 +245,7 @@ static hg_return_t reply_sent_cb(const struct hg_cb_info *cbi) {
      * are in it (via trigger fn).
      */
     is[n].got++;
+
+    /* return handle to the pool for reuse */
+    HG_Destroy(cbi->info.respond.handle);
 }
