@@ -2,7 +2,7 @@
 #
 #MSUB -N transport-test
 #MSUB -l walltime=0:15:00
-#MSUB -l nodes=1:haswell
+#MSUB -l nodes=2:haswell
 #MSUB -o /users/$USER/joblogs/transport-test-$MOAB_JOBID.out
 #MSUB -j oe
 ##MSUB -V
@@ -26,6 +26,9 @@ umbrella_bin_dir="$HOME/src/deltafs-umbrella/install/bin"
 logfile=$(mktemp)
 server="$umbrella_bin_dir/sndrcv-srvr"
 client="$umbrella_bin_dir/sndrcv-client"
+
+host1=$(cat $PBS_NODEFILE | uniq | sort | head -n 1 | tr '\n' ',')
+host2=$(cat $PBS_NODEFILE | uniq | sort -r | head -n 1 | tr '\n' ',')
 
 message () { echo "$@" | tee $logfile; }
 die () { message "Error $@"; exit 1; }
@@ -52,14 +55,14 @@ run_one() {
 
     # Start the server
     message "Starting server (Instances: $num, Address spec: $address)."
-    aprun -n 1 -N 1 $server $num $address 2>&1 > $logfile &
+    aprun -L $host1 -n 1 -N 1 $server $num $address 2>&1 > $logfile &
 
     server_pid=$!
 
     # Start the client
     message "Starting client (Instances: $num, Address spec: $address)."
     message "Please be patient while the test is in progress..."
-    aprun -n 1 -N 1 $client $num $address $address 2>&1 > $logfile
+    aprun -L $host2 -n 1 -N 1 $client $num $address $address 2>&1 > $logfile
 
     # Collect return codes
     client_ret=$?
