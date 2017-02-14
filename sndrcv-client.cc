@@ -279,7 +279,7 @@ void *run_instance(void *arg) {
 
     /* print out rpc stats */
     diff = 1e9 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-    printf("%d: average time per rpc = %llu nsec\n", n, diff / g.count);
+    printf("%d: average time per rpc = %lu nsec\n", n, diff / g.count);
 
     pthread_cond_destroy(&is[n].scond);
     pthread_mutex_unlock(&is[n].slock);
