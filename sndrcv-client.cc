@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <time.h>
 
 #include <mercury.h>
 #include <mercury_macros.h>
@@ -177,6 +178,8 @@ void *run_instance(void *arg) {
     hg_return_t ret;
     struct lookup_state lst;
     hg_op_id_t lookupop;
+    struct timespec start, end;
+    uint64_t diff;
     
     printf("%d: instance running\n", n);
     is[n].n = n;
@@ -237,6 +240,10 @@ void *run_instance(void *arg) {
     if (pthread_mutex_init(&is[n].slock, NULL) != 0) errx(1, "s mutex init");
     is[n].nsent = 0;
     if (pthread_cond_init(&is[n].scond, NULL) != 0) errx(1, "scond init");
+
+    /* start the clock before initiating sends */
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     for (lcv = 0 ; lcv < g.count ; lcv++) {
         hg_handle_t rpchand;
         rpcin_t in;
@@ -266,6 +273,14 @@ void *run_instance(void *arg) {
         if (pthread_cond_wait(&is[n].scond, &is[n].slock) != 0)
             errx(1, "snd cond wait");
     }
+
+    /* stop the clock now that all sends completed */
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    /* print out rpc stats */
+    diff = 1e9 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+    printf("%d: average time per rpc = %llu nsec\n", n, diff / g.count);
+
     pthread_cond_destroy(&is[n].scond);
     pthread_mutex_unlock(&is[n].slock);
     pthread_mutex_destroy(&is[n].slock);
