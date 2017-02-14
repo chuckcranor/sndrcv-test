@@ -57,6 +57,7 @@ struct g {
     char *remotespec;        /* from the cmd line */
     int count;               /* number of msgs to send in a run */
     int serialsend;          /* use serial send mode */
+    int quiet;               /* don't print during transfer */
 } g;
 
 /*
@@ -139,6 +140,7 @@ int main(int argc, char **argv) {
         g.count = DEF_COUNT;
     }
     g.serialsend = (getenv("SERIALSEND") != NULL);
+    g.quiet = (getenv("QUIET") != NULL);
 
     printf("main: starting %d ...\n", g.ninst);
     tarr = (pthread_t *)malloc(g.ninst * sizeof(pthread_t));
@@ -253,10 +255,10 @@ void *run_instance(void *arg) {
 
         in.ret = (lcv+1);
 
-        printf("%d: launching %d\n", n, in.ret);
+        if (!g.quiet) printf("%d: launching %d\n", n, in.ret);
         ret = HG_Forward(rpchand, forw_cb, &n, &in);
         if (ret != HG_SUCCESS) errx(1, "hg forward failed");
-        printf("%d: launched %d\n", n, in.ret);
+        if (!g.quiet) printf("%d: launched %d\n", n, in.ret);
         if (g.serialsend) {  /* sending one at a time, don't overlap */
             pthread_mutex_lock(&is[n].slock);
             while (is[n].nsent <= lcv) {
@@ -350,7 +352,7 @@ static hg_return_t forw_cb(const struct hg_cb_info *cbi) {
     ret = HG_Get_output(hand, &out);
     if (ret != HG_SUCCESS) errx(1, "get output failed");
 
-    printf("%d: forw complete (code=%d)\n", n, out.ret);
+    if (!g.quiet) printf("%d: forw complete (code=%d)\n", n, out.ret);
 
     HG_Free_output(hand, &out);
 

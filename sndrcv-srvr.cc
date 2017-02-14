@@ -43,6 +43,7 @@
 struct g {
     char *serverspec;        /* from the cmd line */
     int count;               /* number of msgs to recv in a run */
+    int quiet;               /* quiet mode */
 } g;
 
 /*
@@ -58,6 +59,7 @@ struct is {
     char myid[256];          /* my local merc address */
     char myfun[64];          /* my function name */
     int got;                 /* number of RPCs server has got */
+    int quiet;               /* quiet mode */
 };
 struct is *is;    /* an array of state */
 
@@ -98,6 +100,7 @@ int main(int argc, char **argv) {
     } else {
         g.count = DEF_COUNT;
     }
+    g.quiet = (getenv("QUIET") != NULL);
 
     printf("main: starting %d ...\n", n);
     tarr = (pthread_t *)malloc(n * sizeof(pthread_t));
@@ -221,7 +224,7 @@ static hg_return_t rpchandler(hg_handle_t handle) {
 
     ret = HG_Get_input(handle, &in);
     if (ret != HG_SUCCESS) errx(1, "HG_Get_input failed");
-    printf("%d: got remote input %d\n", n, in.ret);
+    if (!g.quiet) printf("%d: got remote input %d\n", n, in.ret);
     out.ret = in.ret * -1;
     ret = HG_Free_input(handle, &in);
 
