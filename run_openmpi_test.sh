@@ -27,9 +27,10 @@ logfile=$(mktemp)
 server="$umbrella_bin_dir/sndrcv-srvr"
 client="$umbrella_bin_dir/sndrcv-client"
 
-message () { echo "$@" | tee $logfile; }
+message () { echo "$@" | tee -a $logfile; }
 die () { message "Error $@"; exit 1; }
 
+rm $logfile
 message "Output is available in $logfile"
 
 protos=("bmi+tcp" "cci+tcp" "cci+gni")
@@ -52,14 +53,14 @@ run_one() {
 
     # Start the server
     message "Starting server (Instances: $num, Address spec: $address)."
-    mpirun.openmpi -np 1 -tag-output $server $num $address 2>&1 > $logfile &
+    mpirun.openmpi -np 1 -tag-output $server $num $address 2>&1 >> $logfile &
 
     server_pid=$!
 
     # Start the client
     message "Starting client (Instances: $num, Address spec: $address)."
     message "Please be patient while the test is in progress..."
-    mpirun.openmpi -np 1 -tag-output $client $num $address $address 2>&1 > $logfile
+    mpirun.openmpi -np 1 -tag-output $client $num $address $address 2>&1 >> $logfile
 
     # Collect return codes
     client_ret=$?

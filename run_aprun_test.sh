@@ -30,9 +30,10 @@ client="$umbrella_bin_dir/sndrcv-client"
 host1=$(cat $PBS_NODEFILE | uniq | sort | head -n 1 | tr '\n' ',')
 host2=$(cat $PBS_NODEFILE | uniq | sort -r | head -n 1 | tr '\n' ',')
 
-message () { echo "$@" | tee $logfile; }
+message () { echo "$@" | tee -a $logfile; }
 die () { message "Error $@"; exit 1; }
 
+rm $logfile
 message "Output is available in $logfile"
 
 protos=("bmi+tcp" "cci+tcp" "cci+gni")
@@ -55,14 +56,14 @@ run_one() {
 
     # Start the server
     message "Starting server (Instances: $num, Address spec: $address)."
-    aprun -L $host1 -n 1 -N 1 $server $num $address 2>&1 > $logfile &
+    aprun -L $host1 -n 1 -N 1 $server $num $address 2>&1 >> $logfile &
 
     server_pid=$!
 
     # Start the client
     message "Starting client (Instances: $num, Address spec: $address)."
     message "Please be patient while the test is in progress..."
-    aprun -L $host2 -n 1 -N 1 $client $num $address $address 2>&1 > $logfile
+    aprun -L $host2 -n 1 -N 1 $client $num $address $address 2>&1 >> $logfile
 
     # Collect return codes
     client_ret=$?
