@@ -33,6 +33,19 @@ die () { message "Error $@"; exit 1; }
 rm $logfile
 message "Output is available in $logfile"
 
+host1=$(/share/testbed/bin/emulab-listall | \
+        awk -F, '{ print $1 "'"`hostname | sed 's/^[^\.]*././'`"'"}')
+host2=$(/share/testbed/bin/emulab-listall | \
+        awk -F, '{ print $2 "'"`hostname | sed 's/^[^\.]*././'`"'"}')
+
+# Get host IPs
+mpirun.openmpi -np 1 --host $host1 hostname -i > /tmp/host1-ip.txt
+mpirun.openmpi -np 1 --host $host2 hostname -i > /tmp/host2-ip.txt
+host1_ip=$(cat /tmp/host1-ip.txt | head -1)
+host2_ip=$(cat /tmp/host2-ip.txt | head -1)
+message "Host 1: hostname = $host1, ip = $host1_ip"
+message "Host 2: hostname = $host2, ip = $host2_ip"
+
 protos=("bmi+tcp" "cci+tcp" "cci+gni")
 instances=(1 2 4 8)
 repeats=3
@@ -49,18 +62,21 @@ run_one() {
     message "====================================================="
     message ""
 
-    address="${proto}://$(hostname -i):%d"
+    address1="${proto}://$host1_ip:%d"
+    address2="${proto}://$host2_ip:%d"
 
     # Start the server
-    message "Starting server (Instances: $num, Address spec: $address)."
-    mpirun.openmpi -np 1 -tag-output $server $num $address 2>&1 >> $logfile &
+    message "Starting server (Instances: $num, Address spec: $address1)."
+    mpirun.openmpi -np 1 --host $host1 -tag-output $server $num $address1 \
+        2>&1 >> $logfile &
 
     server_pid=$!
 
     # Start the client
-    message "Starting client (Instances: $num, Address spec: $address)."
+    message "Starting client (Instances: $num, Address spec: $address2)."
     message "Please be patient while the test is in progress..."
-    mpirun.openmpi -np 1 -tag-output $client $num $address $address 2>&1 >> $logfile
+    mpirun.openmpi -np 1 --host $host2 -tag-output $client $num $address2 \
+        $address1 2>&1 >> $logfile
 
     # Collect return codes
     client_ret=$?
