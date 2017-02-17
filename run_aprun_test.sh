@@ -27,14 +27,22 @@ logfile=$(mktemp)
 server="$umbrella_bin_dir/sndrcv-srvr"
 client="$umbrella_bin_dir/sndrcv-client"
 
-host1=$(cat $PBS_NODEFILE | uniq | sort | head -n 1 | tr '\n' ',')
-host2=$(cat $PBS_NODEFILE | uniq | sort -r | head -n 1 | tr '\n' ',')
-
 message () { echo "$@" | tee -a $logfile; }
 die () { message "Error $@"; exit 1; }
 
 rm $logfile
 message "Output is available in $logfile"
+
+host1=$(cat $PBS_NODEFILE | uniq | sort | head -n 1 | tr '\n' ',')
+host2=$(cat $PBS_NODEFILE | uniq | sort -r | head -n 1 | tr '\n' ',')
+
+# Get host IPs
+aprun -L $host1 -n 1 -N 1 hostname -i > /tmp/host1-ip.txt
+aprun -L $host2 -n 1 -N 1 hostname -i > /tmp/host2-ip.txt
+host1_ip=$(cat /tmp/host1-ip.txt | head -1)
+host2_ip=$(cat /tmp/host2-ip.txt | head -1)
+message "Host 1: hostname = $host1, ip = $host1_ip"
+message "Host 2: hostname = $host2, ip = $host2_ip"
 
 protos=("bmi+tcp" "cci+tcp" "cci+gni")
 instances=(1 2 4 8)
@@ -52,18 +60,19 @@ run_one() {
     message "====================================================="
     message ""
 
-    address="${proto}://$(hostname -i):%d"
+    address1="${proto}://$host1_ip:%d"
+    address2="${proto}://$host2_ip:%d"
 
     # Start the server
-    message "Starting server (Instances: $num, Address spec: $address)."
-    aprun -L $host1 -n 1 -N 1 $server $num $address 2>&1 >> $logfile &
+    message "Starting server (Instances: $num, Address spec: $address1)."
+    aprun -L $host1 -n 1 -N 1 $server $num $address1 2>&1 >> $logfile &
 
     server_pid=$!
 
     # Start the client
-    message "Starting client (Instances: $num, Address spec: $address)."
+    message "Starting client (Instances: $num, Address spec: $address2)."
     message "Please be patient while the test is in progress..."
-    aprun -L $host2 -n 1 -N 1 $client $num $address $address 2>&1 >> $logfile
+    aprun -L $host2 -n 1 -N 1 $client $num $address2 $address1 2>&1 >> $logfile
 
     # Collect return codes
     client_ret=$?
