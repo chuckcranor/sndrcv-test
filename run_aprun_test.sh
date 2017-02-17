@@ -18,12 +18,13 @@
 ######################
 
 umbrella_bin_dir="$HOME/src/deltafs-umbrella/install/bin"
+output_dir="$HOME"
 
 ###############
 # Core script #
 ###############
 
-logfile=$(mktemp)
+logfile="$output_dir/sndrcv-test.log"
 server="$umbrella_bin_dir/sndrcv-srvr"
 client="$umbrella_bin_dir/sndrcv-client"
 
@@ -37,10 +38,10 @@ host1=$(cat $PBS_NODEFILE | uniq | sort | head -n 1 | tr '\n' ',')
 host2=$(cat $PBS_NODEFILE | uniq | sort -r | head -n 1 | tr '\n' ',')
 
 # Get host IPs
-aprun -L $host1 -n 1 -N 1 hostname -i > /tmp/host1-ip.txt
-aprun -L $host2 -n 1 -N 1 hostname -i > /tmp/host2-ip.txt
-host1_ip=$(cat /tmp/host1-ip.txt | head -1)
-host2_ip=$(cat /tmp/host2-ip.txt | head -1)
+aprun -L $host1 -n 1 -N 1 hostname -i > $output_dir/host1-ip.txt
+aprun -L $host2 -n 1 -N 1 hostname -i > $output_dir/host2-ip.txt
+host1_ip=$(cat $output_dir/host1-ip.txt | head -1)
+host2_ip=$(cat $output_dir/host2-ip.txt | head -1)
 message "Host 1: hostname = $host1, ip = $host1_ip"
 message "Host 2: hostname = $host2, ip = $host2_ip"
 
